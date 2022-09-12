@@ -167,18 +167,18 @@ public class RemoteConfigRepository extends AbstractConfigRepository {
         // Tracer 日志
         Transaction transaction = Tracer.newTransaction("Apollo.ConfigService", "syncRemoteConfig");
         try {
-            // 获得缓存的 ApolloConfig 对象
+            // 1、获得缓存的 ApolloConfig 对象
             ApolloConfig previous = m_configCache.get();
-            // 从 Config Service 加载 ApolloConfig 对象
+            // 2、从 Config Service 加载 ApolloConfig 对象
             ApolloConfig current = loadApolloConfig();
 
             // reference equals means HTTP 304
-            // 若不相等，说明更新了，设置到缓存中
+            // 3、若不相等，说明更新了，设置到缓存中
             if (previous != current) {
                 logger.debug("Remote Config refreshed!");
                 // 设置到缓存
                 m_configCache.set(current);
-                // 发布 Repository 的配置发生变化，触发对应的监听器们
+                // 4、发布 Repository 的配置发生变化，触发对应的监听器们
                 super.fireRepositoryChange(m_namespace, this.getConfig());
             }
             // Tracer 日志
@@ -221,10 +221,10 @@ public class RemoteConfigRepository extends AbstractConfigRepository {
         int maxRetries = m_configNeedForceRefresh.get() ? 2 : 1;
         long onErrorSleepTime = 0; // 0 means no sleep
         Throwable exception = null;
-        // 获得所有的 Config Service 的地址
+        // 1、获得所有的 Config Service 的地址
         List<ServiceDTO> configServices = getConfigServices();
         String url = null;
-        // 循环读取配置重试次数直到成功。每一次，都会循环所有的 ServiceDTO 数组。
+        // 2、循环读取配置重试次数直到成功。每一次，都会循环所有的 ServiceDTO 数组。
         for (int i = 0; i < maxRetries; i++) {
             // 随机所有的 Config Service 的地址
             List<ServiceDTO> randomConfigServices = Lists.newLinkedList(configServices);
@@ -234,7 +234,7 @@ public class RemoteConfigRepository extends AbstractConfigRepository {
             if (m_longPollServiceDto.get() != null) {
                 randomConfigServices.add(0, m_longPollServiceDto.getAndSet(null));
             }
-            // 循环所有的 Config Service 的地址
+            // 3、循环所有的 Config Service 的地址
             for (ServiceDTO configService : randomConfigServices) {
                 // sleep 等待，下次从 Config Service 拉取配置
                 if (onErrorSleepTime > 0) {
@@ -270,12 +270,14 @@ public class RemoteConfigRepository extends AbstractConfigRepository {
                     // 无新的配置，直接返回缓存的 ApolloConfig 对象
                     if (response.getStatusCode() == 304) {
                         logger.debug("Config server responds with 304 HTTP status code.");
+                        // 从这里可以看出来，无论重试多少次，无论读哪个 configService，只要拿到数据，就可以立即返回了
                         return m_configCache.get();
                     }
 
                     // 有新的配置，进行返回新的 ApolloConfig 对象
                     ApolloConfig result = response.getBody();
                     logger.debug("Loaded config for {}: {}", m_namespace, result);
+                    // 从这里可以看出来，无论重试多少次，无论读哪个 configService，只要拿到数据，就可以立即返回了
                     return result;
                 } catch (ApolloConfigStatusCodeException ex) {
                     ApolloConfigStatusCodeException statusCodeException = ex;
