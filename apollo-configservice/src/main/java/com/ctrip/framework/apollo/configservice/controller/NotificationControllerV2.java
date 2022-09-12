@@ -269,6 +269,7 @@ public class NotificationControllerV2 implements ReleaseMessageListener {
                 }
             }
         }
+        // 若非空，说明有配置更新
         return newNotifications;
     }
 
@@ -320,7 +321,7 @@ public class NotificationControllerV2 implements ReleaseMessageListener {
                         }
                     }
                     logger.debug("Async notify {}", results.get(i));
-                    // 设置结果
+                    // 设置结果，结束长轮训
                     results.get(i).setResult(configNotification);
                 }
             });
