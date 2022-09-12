@@ -35,6 +35,9 @@ public class MetaDomainConsts {
         domains.put(Env.PRO, env.getProperty("pro_meta", prop.getProperty("pro.meta", DEFAULT_META_URL)));
     }
 
+    /**
+     * 域名应该配置在 System.getProperties() 中，然后通过环境对应的字段取出来
+     */
     public static String getDomain(Env env) {
         return String.valueOf(domains.get(env));
     }

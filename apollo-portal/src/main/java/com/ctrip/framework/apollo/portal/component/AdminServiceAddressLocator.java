@@ -109,7 +109,7 @@ public class AdminServiceAddressLocator {
     private boolean refreshServerAddressCache(Env env) {
         for (int i = 0; i < RETRY_TIMES; i++) {
             try {
-                // 请求 Meta Service ，获得 Admin Service 集群地址
+                // http 请求 Meta Service ，获得 Admin Service 集群地址
                 ServiceDTO[] services = getAdminServerAddress(env);
                 // 获得结果为空，continue ，继续执行下一次请求
                 if (services == null || services.length == 0) {

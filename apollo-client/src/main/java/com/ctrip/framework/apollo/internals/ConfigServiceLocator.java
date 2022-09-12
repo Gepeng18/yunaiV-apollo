@@ -63,7 +63,7 @@ public class ConfigServiceLocator {
         this.m_executorService = Executors.newScheduledThreadPool(1, ApolloThreadFactory.create("ConfigServiceLocator", true));
         // 初始拉取 Config Service 地址
         this.tryUpdateConfigServices();
-        // 创建定时任务，定时拉取 Config Service 地址
+        // 创建定时任务，定时拉取 Config Service 地址，和上面调用的是同一个方法
         this.schedulePeriodicRefresh();
     }
 
@@ -81,6 +81,7 @@ public class ConfigServiceLocator {
         return m_configServices.get();
     }
 
+    // fail-safe
     private boolean tryUpdateConfigServices() {
         try {
             updateConfigServices();
@@ -112,11 +113,12 @@ public class ConfigServiceLocator {
         Throwable exception = null;
 
         // 循环请求 Meta Service ，获取 Config Service 地址
+        // 啥玩意？这里没看到循环请求Meta Service，只看到重试
         for (int i = 0; i < maxRetries; i++) {
             Transaction transaction = Tracer.newTransaction("Apollo.MetaService", "getConfigService");
             transaction.addData("Url", url);
             try {
-                // 请求
+                // 1、请求
                 HttpResponse<List<ServiceDTO>> response = m_httpUtil.doGet(request, m_responseType);
                 transaction.setStatus(Transaction.SUCCESS);
                 // 获得结果 ServiceDTO 数组
@@ -126,10 +128,11 @@ public class ConfigServiceLocator {
                     logConfigService("Empty response!");
                     continue;
                 }
-                // 更新缓存
+                // 2、更新缓存
                 m_configServices.set(services);
                 // 打印结果 ServiceDTO 数组
                 logConfigServices(services);
+                // 成功一次，就return
                 return;
             } catch (Throwable ex) {
                 Tracer.logEvent("ApolloConfigException", ExceptionUtil.getDetailMessage(ex));
