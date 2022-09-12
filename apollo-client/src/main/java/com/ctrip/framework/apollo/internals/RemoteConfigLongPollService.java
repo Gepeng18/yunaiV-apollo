@@ -176,7 +176,7 @@ public class RemoteConfigLongPollService {
         } catch (Throwable ex) {
             // 设置 m_longPollStarted 为 false
             m_longPollStarted.set(false);
-            // 【TODO 6001】Tracer 日志
+            // Tracer 日志
             ApolloConfigException exception = new ApolloConfigException("Schedule long polling refresh failed", ex);
             Tracer.logError(exception);
             logger.warn(ExceptionUtil.getDetailMessage(exception));
@@ -207,7 +207,7 @@ public class RemoteConfigLongPollService {
                 } catch (InterruptedException e) {
                 }
             }
-            // 【TODO 6001】Tracer 日志
+            // Tracer 日志
             Transaction transaction = Tracer.newTransaction("Apollo.ConfigService", "pollNotification");
             String url = null;
             try {
@@ -225,7 +225,7 @@ public class RemoteConfigLongPollService {
                 HttpRequest request = new HttpRequest(url);
                 request.setReadTimeout(LONG_POLLING_READ_TIMEOUT);
 
-                // 【TODO 6001】Tracer 日志
+                // Tracer 日志
                 transaction.addData("Url", url);
 
                 // 发起请求，返回 HttpResponse 对象
@@ -238,7 +238,7 @@ public class RemoteConfigLongPollService {
                     updateNotifications(response.getBody());
                     // 更新 m_remoteNotificationMessages
                     updateRemoteNotifications(response.getBody());
-                    // 【TODO 6001】Tracer 日志
+                    // Tracer 日志
                     transaction.addData("Result", response.getBody().toString());
                     // 通知对应的 RemoteConfigRepository 们
                     notify(lastServiceDto, response.getBody());
@@ -251,13 +251,13 @@ public class RemoteConfigLongPollService {
                 }
                 // 标记成功
                 m_longPollFailSchedulePolicyInSecond.success();
-                // 【TODO 6001】Tracer 日志
+                // Tracer 日志
                 transaction.addData("StatusCode", response.getStatusCode());
                 transaction.setStatus(Transaction.SUCCESS);
             } catch (Throwable ex) {
                 // 重置连接的 Config Service 的地址，下次请求不同的 Config Service
                 lastServiceDto = null;
-                // 【TODO 6001】Tracer 日志
+                // Tracer 日志
                 Tracer.logEvent("ApolloConfigException", ExceptionUtil.getDetailMessage(ex));
                 transaction.setStatus(ex);
                 // 标记失败，计算下一次延迟执行时间
@@ -298,7 +298,7 @@ public class RemoteConfigLongPollService {
                     // 进行通知
                     remoteConfigRepository.onLongPollNotified(lastServiceDto, remoteMessages);
                 } catch (Throwable ex) {
-                    // 【TODO 6001】Tracer 日志
+                    // Tracer 日志
                     Tracer.logError(ex);
                 }
             }

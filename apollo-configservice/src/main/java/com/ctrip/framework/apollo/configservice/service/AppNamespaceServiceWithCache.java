@@ -187,19 +187,19 @@ public class AppNamespaceServiceWithCache implements InitializingBean {
         scanNewAppNamespaces(); // block the startup process until load finished
         // 创建定时任务，全量重构 AppNamespace 缓存
         scheduledExecutorService.scheduleAtFixedRate(() -> {
-            // 【TODO 6001】Tracer 日志
+            // Tracer 日志
             Transaction transaction = Tracer.newTransaction("Apollo.AppNamespaceServiceWithCache", "rebuildCache");
             try {
                 // 全量重建 AppNamespace 缓存
                 this.updateAndDeleteCache();
-                // 【TODO 6001】Tracer 日志
+                // Tracer 日志
                 transaction.setStatus(Transaction.SUCCESS);
             } catch (Throwable ex) {
-                // 【TODO 6001】Tracer 日志
+                // Tracer 日志
                 transaction.setStatus(ex);
                 logger.error("Rebuild cache failed", ex);
             } finally {
-                // 【TODO 6001】Tracer 日志
+                // Tracer 日志
                 transaction.complete();
             }
         }, rebuildInterval, rebuildInterval, rebuildIntervalTimeUnit);
@@ -211,19 +211,19 @@ public class AppNamespaceServiceWithCache implements InitializingBean {
      * 加载新的 AppNamespace 们
      */
     private void scanNewAppNamespaces() {
-        // 【TODO 6001】Tracer 日志
+        // Tracer 日志
         Transaction transaction = Tracer.newTransaction("Apollo.AppNamespaceServiceWithCache", "scanNewAppNamespaces");
         try {
             // 加载新的 AppNamespace 们
             this.loadNewAppNamespaces();
-            // 【TODO 6001】Tracer 日志
+            // Tracer 日志
             transaction.setStatus(Transaction.SUCCESS);
         } catch (Throwable ex) {
-            // 【TODO 6001】Tracer 日志
+            // Tracer 日志
             transaction.setStatus(ex);
             logger.error("Load new app namespaces failed", ex);
         } finally {
-            // 【TODO 6001】Tracer 日志
+            // Tracer 日志
             transaction.complete();
         }
     }

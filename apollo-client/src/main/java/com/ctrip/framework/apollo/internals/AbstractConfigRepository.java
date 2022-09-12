@@ -35,7 +35,7 @@ public abstract class AbstractConfigRepository implements ConfigRepository {
             // 返回同步成功
             return true;
         } catch (Throwable ex) {
-            // 【TODO 6001】Tracer 日志
+            // Tracer 日志
             Tracer.logEvent("ApolloConfigException", ExceptionUtil.getDetailMessage(ex));
             logger.warn("Sync config failed, will retry. Repository {}, reason: {}", this.getClass(), ExceptionUtil.getDetailMessage(ex));
         }
@@ -73,7 +73,7 @@ public abstract class AbstractConfigRepository implements ConfigRepository {
                 // 触发监听器
                 listener.onRepositoryChange(namespace, newProperties);
             } catch (Throwable ex) {
-                // 【TODO 6001】Tracer 日志
+                // Tracer 日志
                 Tracer.logError(ex);
                 logger.error("Failed to invoke repository change listener {}", listener.getClass(), ex);
             }

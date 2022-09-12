@@ -163,15 +163,15 @@ public class ReleaseMessageServiceWithCache implements ReleaseMessageListener, I
         // 创建定时任务，增量拉取 ReleaseMessage 到缓存，用以处理初始化期间，产生的 ReleaseMessage 遗漏的问题。
         executorService.submit(() -> {
             while (doScan.get() && !Thread.currentThread().isInterrupted()) {
-                // 【TODO 6001】Tracer 日志
+                // Tracer 日志
                 Transaction transaction = Tracer.newTransaction("Apollo.ReleaseMessageServiceWithCache", "scanNewReleaseMessages");
                 try {
                     // 增量拉取 ReleaseMessage 到缓存
                     loadReleaseMessages(maxIdScanned);
-                    // 【TODO 6001】Tracer 日志
+                    // Tracer 日志
                     transaction.setStatus(Transaction.SUCCESS);
                 } catch (Throwable ex) {
-                    // 【TODO 6001】Tracer 日志
+                    // Tracer 日志
                     transaction.setStatus(ex);
                     logger.error("Scan new release messages failed", ex);
                 } finally {

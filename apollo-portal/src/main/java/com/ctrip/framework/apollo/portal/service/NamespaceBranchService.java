@@ -40,7 +40,7 @@ public class NamespaceBranchService {
     public NamespaceDTO createBranch(String appId, Env env, String parentClusterName, String namespaceName) {
         // 创建 Namespace 分支
         NamespaceDTO createdBranch = namespaceBranchAPI.createBranch(appId, env, parentClusterName, namespaceName, userInfoHolder.getUser().getUserId());
-        // 【TODO 6001】Tracer 日志
+        // Tracer 日志
         Tracer.logEvent(TracerEventType.CREATE_GRAY_RELEASE, String.format("%s+%s+%s+%s", appId, env, parentClusterName, namespaceName));
         return createdBranch;
     }
@@ -58,7 +58,7 @@ public class NamespaceBranchService {
         rules.setDataChangeLastModifiedBy(operator);
         // 更新 Namespace 分支的灰度规则
         namespaceBranchAPI.updateBranchGrayRules(appId, env, clusterName, namespaceName, branchName, rules);
-        // 【TODO 6001】Tracer 日志
+        // Tracer 日志
         Tracer.logEvent(TracerEventType.UPDATE_GRAY_RELEASE_RULE, String.format("%s+%s+%s+%s", appId, env, clusterName, namespaceName));
     }
 
@@ -82,7 +82,7 @@ public class NamespaceBranchService {
         // 合并子 Namespace 变更的配置 Map 到父 Namespace ，并进行一次 Release
         ReleaseDTO mergedResult = releaseService.updateAndPublish(appId, env, clusterName, namespaceName, title, comment,
                         branchName, isEmergencyPublish, deleteBranch, changeSets);
-        // 【TODO 6001】Tracer 日志
+        // Tracer 日志
         Tracer.logEvent(TracerEventType.MERGE_GRAY_RELEASE, String.format("%s+%s+%s+%s", appId, env, clusterName, namespaceName));
         return mergedResult;
     }

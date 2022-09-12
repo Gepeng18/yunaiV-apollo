@@ -59,23 +59,23 @@ public class ReleaseMessageScanner implements InitializingBean {
     public void afterPropertiesSet() {
         // 从 ServerConfig 中获得频率
         databaseScanInterval = bizConfig.releaseMessageScanIntervalInMilli();
-        // 获得最大的 ReleaseMessage 的编号
+        // 启动的时候，初始化最大的 ReleaseMessage 的编号
         maxIdScanned = loadLargestMessageId();
         // 创建从 DB 中扫描 ReleaseMessage 表的定时任务
         executorService.scheduleWithFixedDelay((Runnable) () -> {
-            // 【TODO 6001】Tracer 日志
+            // Tracer 日志
             Transaction transaction = Tracer.newTransaction("Apollo.ReleaseMessageScanner", "scanMessage");
             try {
                 // 从 DB 中，扫描 ReleaseMessage 们
                 scanMessages();
-                // 【TODO 6001】Tracer 日志
+                // Tracer 日志
                 transaction.setStatus(Transaction.SUCCESS);
             } catch (Throwable ex) {
-                // 【TODO 6001】Tracer 日志
+                // Tracer 日志
                 transaction.setStatus(ex);
                 logger.error("Scan and send message failed", ex);
             } finally {
-                // 【TODO 6001】Tracer 日志
+                // Tracer 日志
                 transaction.complete();
             }
         }, databaseScanInterval, databaseScanInterval, TimeUnit.MILLISECONDS);
@@ -116,7 +116,7 @@ public class ReleaseMessageScanner implements InitializingBean {
         if (CollectionUtils.isEmpty(releaseMessages)) {
             return false;
         }
-        // 触发监听器
+        // 触发监听器（从本scanner启动后，有没有新消息）
         fireMessageScanned(releaseMessages);
         // 获得新的 maxIdScanned ，取最后一条记录
         int messageScanned = releaseMessages.size();

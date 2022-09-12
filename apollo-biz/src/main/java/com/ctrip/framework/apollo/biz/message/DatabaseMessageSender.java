@@ -67,24 +67,24 @@ public class DatabaseMessageSender implements MessageSender {
             logger.warn("Channel {} not supported by DatabaseMessageSender!");
             return;
         }
-        // 【TODO 6001】Tracer 日志
+        // Tracer 日志
         Tracer.logEvent("Apollo.AdminService.ReleaseMessage", message);
-        // 【TODO 6001】Tracer 日志
+        // Tracer 日志
         Transaction transaction = Tracer.newTransaction("Apollo.AdminService", "sendMessage");
         try {
             // 保存 ReleaseMessage 对象
             ReleaseMessage newMessage = releaseMessageRepository.save(new ReleaseMessage(message));
             // 添加到清理 Message 队列。若队列已满，添加失败，不阻塞等待。
             toClean.offer(newMessage.getId());
-            // 【TODO 6001】Tracer 日志
+            // Tracer 日志
             transaction.setStatus(Transaction.SUCCESS);
         } catch (Throwable ex) {
-            // 【TODO 6001】Tracer 日志
+            // Tracer 日志
             logger.error("Sending message to database failed", ex);
             transaction.setStatus(ex);
             throw ex;
         } finally {
-            // 【TODO 6001】Tracer 日志
+            // Tracer 日志
             transaction.complete();
         }
     }
@@ -105,7 +105,7 @@ public class DatabaseMessageSender implements MessageSender {
                         TimeUnit.SECONDS.sleep(5);
                     }
                 } catch (Throwable ex) {
-                    // 【TODO 6001】Tracer 日志
+                    // Tracer 日志
                     Tracer.logError(ex);
                 }
             }
@@ -131,7 +131,7 @@ public class DatabaseMessageSender implements MessageSender {
             releaseMessageRepository.delete(messages);
             // 若拉取不足 100 条，说明无老消息了
             hasMore = messages.size() == 100;
-            // 【TODO 6001】Tracer 日志
+            // Tracer 日志
             messages.forEach(toRemove -> Tracer.logEvent(
                     String.format("ReleaseMessage.Clean.%s", toRemove.getMessage()), String.valueOf(toRemove.getId())));
         }

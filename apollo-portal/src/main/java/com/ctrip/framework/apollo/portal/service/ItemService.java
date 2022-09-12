@@ -70,7 +70,7 @@ public class ItemService {
         changeSets.setDataChangeLastModifiedBy(userInfoHolder.getUser().getUserId());
         // 调用 Admin Service API ，批量更新 Item 们。
         updateItems(appId, env, clusterName, namespaceName, changeSets);
-        // 【TODO 6001】Tracer 日志
+        // Tracer 日志
         Tracer.logEvent(TracerEventType.MODIFY_NAMESPACE_BY_TEXT, String.format("%s+%s+%s+%s", appId, env, clusterName, namespaceName));
         Tracer.logEvent(TracerEventType.MODIFY_NAMESPACE, String.format("%s+%s+%s+%s", appId, env, clusterName, namespaceName));
     }
@@ -99,7 +99,7 @@ public class ItemService {
         item.setNamespaceId(namespace.getId());
         // 保存 Item 到 Admin Service
         ItemDTO itemDTO = itemAPI.createItem(appId, env, clusterName, namespaceName, item);
-        // 【TODO 6001】Tracer 日志
+        // Tracer 日志
         Tracer.logEvent(TracerEventType.MODIFY_NAMESPACE, String.format("%s+%s+%s+%s", appId, env, clusterName, namespaceName));
         return itemDTO;
     }

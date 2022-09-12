@@ -47,7 +47,7 @@ public class ReleaseService {
         ReleaseDTO releaseDTO = releaseAPI.createRelease(appId, env, clusterName, namespaceName,
                 model.getReleaseTitle(), model.getReleaseComment(),
                 releaseBy, isEmergencyPublish);
-        // 【TODO 6001】Tracer 日志
+        // Tracer 日志
         Tracer.logEvent(TracerEventType.RELEASE_NAMESPACE, String.format("%s+%s+%s+%s", appId, env, clusterName, namespaceName));
         return releaseDTO;
     }

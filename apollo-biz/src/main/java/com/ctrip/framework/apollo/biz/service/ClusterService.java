@@ -73,7 +73,7 @@ public class ClusterService {
         // 保存 Cluster 对象到数据库
         entity.setId(0);//protection
         Cluster cluster = clusterRepository.save(entity);
-        // 【TODO 6001】Tracer 日志
+        // Tracer 日志
         auditService.audit(Cluster.class.getSimpleName(), cluster.getId(), Audit.OP.INSERT, cluster.getDataChangeCreatedBy());
         return cluster;
     }

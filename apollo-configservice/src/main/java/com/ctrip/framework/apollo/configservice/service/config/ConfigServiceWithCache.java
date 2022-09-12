@@ -89,14 +89,14 @@ public class ConfigServiceWithCache extends AbstractConfigService {
                             Tracer.logError(new IllegalArgumentException(String.format("Invalid cache load key %s", key)));
                             return nullConfigCacheEntry;
                         }
-                        // 【TODO 6001】Tracer 日志
+                        // Tracer 日志
                         Transaction transaction = Tracer.newTransaction(TRACER_EVENT_CACHE_LOAD, key);
                         try {
                             // 获得最新的 ReleaseMessage 对象
                             ReleaseMessage latestReleaseMessage = releaseMessageService.findLatestReleaseMessageForMessages(Lists.newArrayList(key));
                             // 获得最新的，并且有效的 Release 对象
                             Release latestRelease = releaseService.findLatestActiveRelease(namespaceInfo.get(0), namespaceInfo.get(1), namespaceInfo.get(2));
-                            // 【TODO 6001】Tracer 日志
+                            // Tracer 日志
                             transaction.setStatus(Transaction.SUCCESS);
                             // 获得通知编号
                             long notificationId = latestReleaseMessage == null ? ConfigConsts.NOTIFICATION_ID_PLACEHOLDER : latestReleaseMessage.getId();
@@ -107,11 +107,11 @@ public class ConfigServiceWithCache extends AbstractConfigService {
                             // 创建 ConfigCacheEntry 对象
                             return new ConfigCacheEntry(notificationId, latestRelease);
                         } catch (Throwable ex) {
-                            // 【TODO 6001】Tracer 日志
+                            // Tracer 日志
                             transaction.setStatus(ex);
                             throw ex;
                         } finally {
-                            // 【TODO 6001】Tracer 日志
+                            // Tracer 日志
                             transaction.complete();
                         }
                     }
@@ -122,21 +122,21 @@ public class ConfigServiceWithCache extends AbstractConfigService {
                 .build(new CacheLoader<Long, Optional<Release>>() {
                     @Override
                     public Optional<Release> load(Long key) {
-                        // 【TODO 6001】Tracer 日志
+                        // Tracer 日志
                         Transaction transaction = Tracer.newTransaction(TRACER_EVENT_CACHE_LOAD_ID, String.valueOf(key));
                         try {
                             // 获得 Release 对象
                             Release release = releaseService.findActiveOne(key);
-                            // 【TODO 6001】Tracer 日志
+                            // Tracer 日志
                             transaction.setStatus(Transaction.SUCCESS);
                             // 使用 Optional 包装 Release 对象返回
                             return Optional.ofNullable(release);
                         } catch (Throwable ex) {
-                            // 【TODO 6001】Tracer 日志
+                            // Tracer 日志
                             transaction.setStatus(ex);
                             throw ex;
                         } finally {
-                            // 【TODO 6001】Tracer 日志
+                            // Tracer 日志
                             transaction.complete();
                         }
                     }
@@ -145,7 +145,7 @@ public class ConfigServiceWithCache extends AbstractConfigService {
 
     @Override
     protected Release findActiveOne(long id, ApolloNotificationMessages clientMessages) {
-        // 【TODO 6001】Tracer 日志
+        // Tracer 日志
         Tracer.logEvent(TRACER_EVENT_CACHE_GET_ID, String.valueOf(id));
         // 从缓存 configIdCache 中，读取 Release 对象
         return configIdCache.getUnchecked(id).orElse(null);
@@ -155,7 +155,7 @@ public class ConfigServiceWithCache extends AbstractConfigService {
     protected Release findLatestActiveRelease(String appId, String clusterName, String namespaceName, ApolloNotificationMessages clientMessages) {
         // 根据 appId + clusterName + namespaceName ，获得 ReleaseMessage 的 `message` 。
         String key = ReleaseMessageKeyGenerator.generate(appId, clusterName, namespaceName);
-        // 【TODO 6001】Tracer 日志
+        // Tracer 日志
         Tracer.logEvent(TRACER_EVENT_CACHE_GET, key);
         // 从缓存 configCache 中，读取 ConfigCacheEntry 对象
         ConfigCacheEntry cacheEntry = configCache.getUnchecked(key);
@@ -175,7 +175,7 @@ public class ConfigServiceWithCache extends AbstractConfigService {
     private void invalidate(String key) {
         // 清空对应的缓存
         configCache.invalidate(key);
-        // 【TODO 6001】Tracer 日志
+        // Tracer 日志
         Tracer.logEvent(TRACER_EVENT_CACHE_INVALIDATE, key);
     }
 

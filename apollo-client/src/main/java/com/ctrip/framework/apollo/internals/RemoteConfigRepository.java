@@ -151,12 +151,12 @@ public class RemoteConfigRepository extends AbstractConfigRepository {
         m_executorService.scheduleAtFixedRate(new Runnable() {
             @Override
             public void run() {
-                // 【TODO 6001】Tracer 日志
+                // Tracer 日志
                 Tracer.logEvent("Apollo.ConfigService", String.format("periodicRefresh: %s", m_namespace));
                 logger.debug("refresh config for namespace: {}", m_namespace);
                 // 尝试同步配置
                 trySync();
-                // 【TODO 6001】Tracer 日志
+                // Tracer 日志
                 Tracer.logEvent("Apollo.Client.Version", Apollo.VERSION);
             }
         }, m_configUtil.getRefreshInterval(), m_configUtil.getRefreshInterval(), m_configUtil.getRefreshIntervalTimeUnit());
@@ -164,7 +164,7 @@ public class RemoteConfigRepository extends AbstractConfigRepository {
 
     @Override
     protected synchronized void sync() {
-        // 【TODO 6001】Tracer 日志
+        // Tracer 日志
         Transaction transaction = Tracer.newTransaction("Apollo.ConfigService", "syncRemoteConfig");
         try {
             // 获得缓存的 ApolloConfig 对象
@@ -181,18 +181,18 @@ public class RemoteConfigRepository extends AbstractConfigRepository {
                 // 发布 Repository 的配置发生变化，触发对应的监听器们
                 super.fireRepositoryChange(m_namespace, this.getConfig());
             }
-            // 【TODO 6001】Tracer 日志
+            // Tracer 日志
             if (current != null) {
                 Tracer.logEvent(String.format("Apollo.Client.Configs.%s", current.getNamespaceName()), current.getReleaseKey());
             }
-            // 【TODO 6001】Tracer 日志
+            // Tracer 日志
             transaction.setStatus(Transaction.SUCCESS);
         } catch (Throwable ex) {
-            // 【TODO 6001】Tracer 日志
+            // Tracer 日志
             transaction.setStatus(ex);
             throw ex;
         } finally {
-            // 【TODO 6001】Tracer 日志
+            // Tracer 日志
             transaction.complete();
         }
     }
@@ -252,7 +252,7 @@ public class RemoteConfigRepository extends AbstractConfigRepository {
                 // 创建 HttpRequest 对象
                 HttpRequest request = new HttpRequest(url);
 
-                // 【TODO 6001】Tracer 日志
+                // Tracer 日志
                 Transaction transaction = Tracer.newTransaction("Apollo.ConfigService", "queryConfig");
                 transaction.addData("Url", url);
                 try {
@@ -263,7 +263,7 @@ public class RemoteConfigRepository extends AbstractConfigRepository {
                     // 标记成功
                     m_loadConfigFailSchedulePolicy.success();
 
-                    // 【TODO 6001】Tracer 日志
+                    // Tracer 日志
                     transaction.addData("StatusCode", response.getStatusCode());
                     transaction.setStatus(Transaction.SUCCESS);
 
@@ -286,19 +286,19 @@ public class RemoteConfigRepository extends AbstractConfigRepository {
                                 "please check whether the configs are released in Apollo!", appId, cluster, m_namespace);
                         statusCodeException = new ApolloConfigStatusCodeException(ex.getStatusCode(), message);
                     }
-                    // 【TODO 6001】Tracer 日志
+                    // Tracer 日志
                     Tracer.logEvent("ApolloConfigException", ExceptionUtil.getDetailMessage(statusCodeException));
                     transaction.setStatus(statusCodeException);
                     // 设置最终的异常
                     exception = statusCodeException;
                 } catch (Throwable ex) {
-                    // 【TODO 6001】Tracer 日志
+                    // Tracer 日志
                     Tracer.logEvent("ApolloConfigException", ExceptionUtil.getDetailMessage(ex));
                     transaction.setStatus(ex);
                     // 设置最终的异常
                     exception = ex;
                 } finally {
-                    // 【TODO 6001】Tracer 日志
+                    // Tracer 日志
                     transaction.complete();
                 }
                 // 计算延迟时间

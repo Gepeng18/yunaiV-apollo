@@ -101,7 +101,7 @@ public class AppService {
         appNamespaceService.createDefaultAppNamespace(appId);
         // 初始化 App 角色
         roleInitializationService.initAppRoles(createdApp);
-        // 【TODO 6001】Tracer 日志
+        // Tracer 日志
         Tracer.logEvent(TracerEventType.CREATE_APP, appId);
         return createdApp;
     }

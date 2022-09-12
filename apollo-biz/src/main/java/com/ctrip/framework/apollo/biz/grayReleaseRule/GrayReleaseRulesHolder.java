@@ -125,21 +125,21 @@ public class GrayReleaseRulesHolder implements ReleaseMessageListener, Initializ
     }
 
     private void periodicScanRules() {
-        // 【TODO 6001】Tracer 日志
+        // Tracer 日志
         Transaction transaction = Tracer.newTransaction("Apollo.GrayReleaseRulesScanner", "scanGrayReleaseRules");
         try {
             // 递增加载版本号
             loadVersion.incrementAndGet();
             // 从数据卷库中，扫描所有 GrayReleaseRules ，并合并到缓存中
             scanGrayReleaseRules();
-            // 【TODO 6001】Tracer 日志
+            // Tracer 日志
             transaction.setStatus(Transaction.SUCCESS);
         } catch (Throwable ex) {
-            // 【TODO 6001】Tracer 日志
+            // Tracer 日志
             transaction.setStatus(ex);
             logger.error("Scan gray release rule failed", ex);
         } finally {
-            // 【TODO 6001】Tracer 日志
+            // Tracer 日志
             transaction.complete();
         }
     }

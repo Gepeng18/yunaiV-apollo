@@ -68,7 +68,7 @@ public class NamespaceService {
         namespace.setDataChangeLastModifiedBy(userInfoHolder.getUser().getUserId());
         // 创建 Namespace 到 Admin Service
         NamespaceDTO createdNamespace = namespaceAPI.createNamespace(env, namespace);
-        // 【TODO 6001】Tracer 日志
+        // Tracer 日志
         Tracer.logEvent(TracerEventType.CREATE_NAMESPACE, String.format("%s+%s+%s+%s", namespace.getAppId(), env, namespace.getClusterName(), namespace.getNamespaceName()));
         return createdNamespace;
     }

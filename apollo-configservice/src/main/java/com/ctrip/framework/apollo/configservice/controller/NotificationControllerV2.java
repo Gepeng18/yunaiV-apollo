@@ -115,13 +115,13 @@ public class NotificationControllerV2 implements ReleaseMessageListener {
             throw new BadRequestException("Invalid format of notifications: " + notificationsAsString);
         }
 
-        // 创建 DeferredResultWrapper 对象
+        // do 创建 DeferredResultWrapper 对象，这个非常关键，就是依靠这个wrapper将请求挂起
         DeferredResultWrapper deferredResultWrapper = new DeferredResultWrapper();
         // Namespace 集合
         Set<String> namespaces = Sets.newHashSet();
         // 客户端的通知 Map 。key 为 Namespace 名，value 为通知编号。
         Map<String, Long> clientSideNotifications = Maps.newHashMap();
-        // 过滤并创建 ApolloConfigNotification Map
+        // 过滤并创建 ApolloConfigNotification Map（如去掉.properties结尾和对齐Server数据库）
         Map<String, ApolloConfigNotification> filteredNotifications = filterNotifications(appId, notifications);
         // 循环 ApolloConfigNotification Map ，初始化上述变量。
         for (Map.Entry<String, ApolloConfigNotification> notificationEntry : filteredNotifications.entrySet()) {
@@ -163,10 +163,9 @@ public class NotificationControllerV2 implements ReleaseMessageListener {
         // 若有新的通知，直接设置结果。
         if (!CollectionUtils.isEmpty(newNotifications)) {
             deferredResultWrapper.setResult(newNotifications);
-            // 若无新的通知，
-        } else {
+        } else { // 若无新的通知，
             // 注册超时事件
-            deferredResultWrapper.onTimeout(() -> logWatchedKeys(watchedKeys, "Apollo.LongPoll.TimeOutKeys")); // 【TODO 6001】Tracer 日志
+            deferredResultWrapper.onTimeout(() -> logWatchedKeys(watchedKeys, "Apollo.LongPoll.TimeOutKeys")); // Tracer 日志
             // 注册结束事件
             deferredResultWrapper.onCompletion(() -> {
                 // 移除 Watch Key + DeferredResultWrapper 出 `deferredResults`
@@ -174,7 +173,7 @@ public class NotificationControllerV2 implements ReleaseMessageListener {
                 for (String key : watchedKeys) {
                     deferredResults.remove(key, deferredResultWrapper);
                 }
-                // 【TODO 6001】Tracer 日志
+                // Tracer 日志
                 logWatchedKeys(watchedKeys, "Apollo.LongPoll.CompletedKeys");
             });
 
@@ -184,7 +183,7 @@ public class NotificationControllerV2 implements ReleaseMessageListener {
                 this.deferredResults.put(key, deferredResultWrapper);
             }
 
-            // 【TODO 6001】Tracer 日志
+            // Tracer 日志
             logWatchedKeys(watchedKeys, "Apollo.LongPoll.RegisteredKeys");
             logger.debug("Listening {} from appId: {}, cluster: {}, namespace: {}, datacenter: {}", watchedKeys, appId, cluster, namespaces, dataCenter);
         }
@@ -205,13 +204,13 @@ public class NotificationControllerV2 implements ReleaseMessageListener {
             if (Strings.isNullOrEmpty(notification.getNamespaceName())) {
                 continue;
             }
-            // 若 Namespace 名以 .properties 结尾，移除该结尾，并设置到 ApolloConfigNotification 中。例如 application.properties => application 。
+            // 若 Namespace 名以 .properties 结尾，移除该结尾，并设置回 ApolloConfigNotification 中。
+            // 例如 application.properties => application 。
             // strip out .properties suffix
             String originalNamespace = namespaceUtil.filterNamespaceName(notification.getNamespaceName());
             notification.setNamespaceName(originalNamespace);
-            // 获得归一化的 Namespace 名字。因为，客户端 Namespace 会填写错大小写。
-            // 例如，数据库中 Namespace 名为 Fx.Apollo ，而客户端 Namespace 名为 fx.Apollo
-            //      通过归一化后，统一为 Fx.Apollo
+            // 获得统一化的 Namespace 名字。即如果客户端的namespace上传错了，则对齐为server端数据库
+            // 因为，客户端 Namespace 会填写错大小写。例如，数据库中 Namespace 名为 Fx.Apollo ，而客户端 Namespace 名为 fx.Apollo。统一为 Fx.Apollo
             // fix the character case issue, such as FX.apollo <-> fx.apollo
             String normalizedNamespace = namespaceUtil.normalizeNamespace(appId, originalNamespace);
 
@@ -276,7 +275,7 @@ public class NotificationControllerV2 implements ReleaseMessageListener {
     @Override
     public void handleMessage(ReleaseMessage message, String channel) {
         logger.info("message received - channel: {}, message: {}", channel, message);
-        // 【TODO 6001】Tracer 日志
+        // Tracer 日志
         String content = message.getMessage();
         Tracer.logEvent("Apollo.LongPoll.Messages", content);
 
@@ -292,7 +291,8 @@ public class NotificationControllerV2 implements ReleaseMessageListener {
             return;
         }
 
-        // `deferredResults` 存在对应的 Watch Key
+        // `deferredResults` 不存在对应的 Watch Key，则return
+        // 这是什么意思呢？不存在，则意味着没有客户端请求因为该content被阻塞，那就不用通知客户端啊
         if (!deferredResults.containsKey(content)) {
             return;
         }
@@ -312,7 +312,7 @@ public class NotificationControllerV2 implements ReleaseMessageListener {
                 logger.debug("Async notify {} clients for key {} with batch {}", results.size(), content,
                         bizConfig.releaseMessageNotificationBatch());
                 for (int i = 0; i < results.size(); i++) {
-                    // 每 N 个客户端，sleep 一段时间。
+                    // 每通知若干个客户端，sleep 一段时间。
                     if (i > 0 && i % bizConfig.releaseMessageNotificationBatch() == 0) {
                         try {
                             TimeUnit.MILLISECONDS.sleep(bizConfig.releaseMessageNotificationBatchIntervalInMilli());
@@ -321,7 +321,7 @@ public class NotificationControllerV2 implements ReleaseMessageListener {
                         }
                     }
                     logger.debug("Async notify {}", results.get(i));
-                    // 设置结果，结束长轮训
+                    // 设置结果，一旦设置了值，被阻塞的连接就会返回
                     results.get(i).setResult(configNotification);
                 }
             });

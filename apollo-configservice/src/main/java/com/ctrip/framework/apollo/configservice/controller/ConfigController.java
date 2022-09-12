@@ -127,7 +127,7 @@ public class ConfigController {
         // 合并 Release 的配置，并将结果设置到 ApolloConfig 中
         apolloConfig.setConfigurations(mergeReleaseConfigurations(releases));
 
-        // 【TODO 6001】Tracer 日志
+        // Tracer 日志
         Tracer.logEvent("Apollo.Config.Found", assembleKey(appId, appClusterNameLoaded, originalNamespace, dataCenter));
         return apolloConfig;
     }

@@ -41,7 +41,7 @@ public class ClusterService {
         }
         // 创建 Cluster 到 Admin Service
         ClusterDTO clusterDTO = clusterAPI.create(env, cluster);
-        // 【TODO 6001】Tracer 日志
+        // Tracer 日志
         Tracer.logEvent(TracerEventType.CREATE_CLUSTER, cluster.getAppId(), "0", cluster.getName());
         return clusterDTO;
     }
