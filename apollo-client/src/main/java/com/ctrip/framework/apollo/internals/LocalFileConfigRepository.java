@@ -60,6 +60,11 @@ public class LocalFileConfigRepository extends AbstractConfigRepository implemen
         this(namespace, null);
     }
 
+    /**
+     *
+     * @param namespace
+     * @param upstream 传入的 upstream 可能是 RemoteConfigRepository
+     */
     public LocalFileConfigRepository(String namespace, ConfigRepository upstream) {
         m_namespace = namespace;
         m_configUtil = ApolloInjector.getInstance(ConfigUtil.class);
@@ -106,11 +111,11 @@ public class LocalFileConfigRepository extends AbstractConfigRepository implemen
 
     @Override
     public Properties getConfig() {
-        // 如果 `m_fileProperties` 为空，强制宫廷不
+        // 1、如果 `m_fileProperties` 为空，强制同步（要么从远端拉，要么读取本地文件）
         if (m_fileProperties == null) {
             sync();
         }
-        // 返回新创建的 `m_fileProperties` 对象，避免原有对象被修改。
+        // 2、返回新创建的 `m_fileProperties` 对象，避免原有对象被修改。
         Properties result = new Properties();
         result.putAll(m_fileProperties);
         return result;
@@ -151,14 +156,14 @@ public class LocalFileConfigRepository extends AbstractConfigRepository implemen
 
     @Override
     protected void sync() {
-        // 从 `m_upstream` 同步配置
+        // do 1、从 `m_upstream` 同步配置，并同步到本地
         // sync with upstream immediately
         boolean syncFromUpstreamResultSuccess = trySyncFromUpstream();
         // 若成功，则直接返回
         if (syncFromUpstreamResultSuccess) {
             return;
         }
-        // 若失败，读取本地缓存的配置文件
+        // do 2、若失败，读取本地缓存的配置文件
         Transaction transaction = Tracer.newTransaction("Apollo.ConfigService", "syncLocalConfig");
         Throwable exception = null;
         try {
@@ -180,14 +185,18 @@ public class LocalFileConfigRepository extends AbstractConfigRepository implemen
         }
     }
 
+    /**
+     * 1、从 `m_upstream`即server端 拉取配置 Properties
+     * 2、更新局部变量并持久化到本地
+     */
     private boolean trySyncFromUpstream() {
         if (m_upstream == null) {
             return false;
         }
         try {
-            // 从 `m_upstream` 拉取配置 Properties
+            // 从 `m_upstream`即server端 拉取配置 Properties
             Properties properties = m_upstream.getConfig();
-            // 更新到 `m_fileProperties` 中
+            // 更新到 `m_fileProperties` 中，并持久化到本地
             updateFileProperties(properties);
             // 返回同步成功
             return true;

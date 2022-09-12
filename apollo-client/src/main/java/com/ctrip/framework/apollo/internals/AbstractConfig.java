@@ -49,6 +49,10 @@ public abstract class AbstractConfig implements Config {
      */
     private List<ConfigChangeListener> m_listeners = Lists.newCopyOnWriteArrayList();
     private ConfigUtil m_configUtil;
+
+    /**
+     * 这些缓存是跟随 DefaultConfig 的
+     */
     private volatile Cache<String, Integer> m_integerCache;
     private volatile Cache<String, Long> m_longCache;
     private volatile Cache<String, Short> m_shortCache;
@@ -95,7 +99,7 @@ public abstract class AbstractConfig implements Config {
     @Override
     public Integer getIntProperty(String key, Integer defaultValue) {
         try {
-            // 初始化缓存
+            // 1、本地缓存没有，初始化本地缓存
             if (m_integerCache == null) {
                 synchronized (this) {
                     if (m_integerCache == null) {
@@ -103,7 +107,7 @@ public abstract class AbstractConfig implements Config {
                     }
                 }
             }
-            // 从缓存中，读取属性值
+            // 2、从缓存中，读取属性值
             return getValueFromCache(key, Functions.TO_INT_FUNCTION, m_integerCache, defaultValue);
         } catch (Throwable ex) {
             Tracer.logError(new ApolloConfigException(
@@ -367,38 +371,40 @@ public abstract class AbstractConfig implements Config {
     }
 
     private <T> T getValueFromCache(String key, Function<String, T> parser, Cache<String, T> cache, T defaultValue) {
-        // 获得属性值
+        // 1、从缓存中读取属性值，若存在，则返回
         T result = cache.getIfPresent(key);
-        // 若存在，则返回
         if (result != null) {
             return result;
         }
-        // 获得值，并更新到缓存
+        // 2、本地缓存中没有值，则调用getProperty获取值，并且获取值后更新到缓存
         return getValueAndStoreToCache(key, parser, cache, defaultValue);
     }
 
     private <T> T getValueAndStoreToCache(String key, Function<String, T> parser, Cache<String, T> cache, T defaultValue) {
         // 获得当前版本号
         long currentConfigVersion = m_configVersion.get();
-        // 获得属性值
+        // 1、调用getProperty获得属性值（其实就是根据remote or localFile获取该属性值）
         String value = getProperty(key, null);
         // 若获得到属性，返回该属性值
         if (value != null) {
-            // 解析属性值
+            // 2、使用映射函数解析属性值
             T result = parser.apply(value);
             // 若解析成功
             if (result != null) {
-                // 若版本号未变化，则更新到缓存，从而解决并发的问题。
+                // do 3、若版本号未变化，则更新到缓存，从而解决并发的问题。
+                // 猜测这里是为了解决，调用getProperty的间隙，有人设值了？double check不行嘛
+                // 还不是，看到m_configVersion在清除缓存的时候，才加1，也就是说，如果在getProperty的时间间隙，缓存被清了，就不设置到缓存里了，为啥
+                //
                 synchronized (this) {
                     if (m_configVersion.get() == currentConfigVersion) {
                         cache.put(key, result);
                     }
                 }
-                // 返回属性值
+                // 4、返回属性值
                 return result;
             }
         }
-        // 获得不到属性值，返回默认值
+        // 5、获得不到属性值，返回默认值
         return defaultValue;
     }
 

@@ -6,6 +6,7 @@ import com.ctrip.framework.apollo.build.ApolloInjector;
 import com.ctrip.framework.apollo.core.enums.ConfigFileFormat;
 import com.ctrip.framework.apollo.spi.ConfigFactory;
 import com.ctrip.framework.apollo.spi.ConfigFactoryManager;
+import com.ctrip.framework.apollo.spi.DefaultConfigFactory;
 import com.google.common.collect.Maps;
 
 import java.util.Map;
@@ -34,7 +35,7 @@ public class DefaultConfigManager implements ConfigManager {
 
     @Override
     public Config getConfig(String namespace) {
-        // 获得 Config 对象
+        // do 1. 从缓存中获取 Config 对象
         Config config = m_configs.get(namespace);
         // 若不存在，进行创建
         if (config == null) {
@@ -43,10 +44,10 @@ public class DefaultConfigManager implements ConfigManager {
                 config = m_configs.get(namespace);
                 // 若不存在，进行创建
                 if (config == null) {
-                    // 获得对应的 ConfigFactory 对象
+                    // do 2. 获得对应的 ConfigFactory 对象，用它来创建config对象
                     ConfigFactory factory = m_factoryManager.getFactory(namespace);
                     // 创建 Config 对象
-                    config = factory.create(namespace);
+                    config = factory.create(namespace); /** @see DefaultConfigFactory#create(String) */
                     // 添加到缓存
                     m_configs.put(namespace, config);
                 }

@@ -84,6 +84,7 @@ public class ConfigService {
      * @param config    the config instance
      */
     static void setConfig(String namespace, final Config config) {
+        // 将namespace对应的configFactory设置到ConfigRegistry中，
         s_instance.getRegistry().register(namespace, new ConfigFactory() {
 
             @Override

@@ -43,7 +43,7 @@ public class DefaultConfig extends AbstractConfig implements RepositoryChangeLis
      */
     private Properties m_resourceProperties;
     /**
-     * 答应告警限流器。当读取不到属性值，会打印告警日志。通过该限流器，避免打印过多日志。
+     * 限制打印日志频率的。当读取不到属性值，会打印告警日志。通过该限流器，避免打印过多日志。
      */
     private RateLimiter m_warnLogRateLimiter;
 
@@ -56,8 +56,8 @@ public class DefaultConfig extends AbstractConfig implements RepositoryChangeLis
     public DefaultConfig(String namespace, ConfigRepository configRepository) {
         m_namespace = namespace;
         m_resourceProperties = loadFromResource(m_namespace);
-        m_configRepository = configRepository;
-        m_configProperties = new AtomicReference<>();
+        m_configRepository = configRepository; // LocalFileConfigRepository or LocalFileConfigRepository + RemoteConfigRepository
+        m_configProperties = new AtomicReference<>(); // 和 m_configRepository 一样
         m_warnLogRateLimiter = RateLimiter.create(0.017); // 1 warning log output per minute
         // 初始化
         initialize();
@@ -80,11 +80,15 @@ public class DefaultConfig extends AbstractConfig implements RepositoryChangeLis
 
     @Override
     public String getProperty(String key, String defaultValue) {
-        // step 1: check system properties, i.e. -Dkey=value 从系统 Properties 获得属性，例如，JVM 启动参数。
+        // step 1: check system properties, i.e. -Dkey=value
+        // step 1: 从系统 Properties 获得属性，例如，JVM 启动参数。
         String value = System.getProperty(key);
 
-        // step 2: check local cached properties file 从缓存 Properties 获得属性
+        // step 2: check local cached properties file
+        // step 2: 从缓存 Properties 获得属性，即调用 LocalFileConfigRepository or LocalFileConfigRepository + RemoteConfigRepository
         if (value == null && m_configProperties.get() != null) {
+            // 等同于调用 LocalFileConfigRepository.getConfig().getProperty(key)
+            // 这个properties来自远端，远端没有，则读本地文件（/opt/data/appId......下）
             value = m_configProperties.get().getProperty(key);
         }
 
@@ -98,6 +102,7 @@ public class DefaultConfig extends AbstractConfig implements RepositoryChangeLis
         }
 
         // step 4: check properties file from classpath
+        // step 4: 从类路径的文件中获取value
         if (value == null && m_resourceProperties != null) {
             value = (String) m_resourceProperties.get(key);
         }
@@ -209,8 +214,11 @@ public class DefaultConfig extends AbstractConfig implements RepositoryChangeLis
         return actualChanges.build();
     }
 
+    /**
+     * 加载类路径：META-INF/config/{namespace}.properties 中的内容到 Properties 中
+     */
     private Properties loadFromResource(String namespace) {
-        // 生成文件名
+        // 文件名为：META-INF/config/{namespace}.properties
         String name = String.format("META-INF/config/%s.properties", namespace);
         // 读取 Properties 文件
         InputStream in = ClassLoaderUtil.getLoader().getResourceAsStream(name);

@@ -21,6 +21,9 @@ public class ApolloInjector {
      */
     private static final Object lock = new Object();
 
+    /**
+     * s_injector是单例，使用 JDK SPI 进行加载
+     */
     private static Injector getInjector() {
         // 若 Injector 不存在，则进行获得
         if (s_injector == null) {
@@ -28,7 +31,7 @@ public class ApolloInjector {
                 // 若 Injector 不存在，则进行获得
                 if (s_injector == null) {
                     try {
-                        // 基于 JDK SPI 加载对应的 Injector 实现对象
+                        // do 基于 JDK SPI 加载对应的 Injector 实现对象
                         s_injector = ServiceBootstrap.loadFirst(Injector.class);
                     } catch (Throwable ex) {
                         ApolloConfigException exception = new ApolloConfigException("Unable to initialize Apollo Injector!", ex);

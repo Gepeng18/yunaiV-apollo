@@ -66,6 +66,7 @@ public class WatchKeysUtil {
                                                          Set<String> namespaces,
                                                          String dataCenter) {
         // 组装 Watch Key Multimap
+        // return Map<namespace, List<appId+ cluster + namespace>>
         Multimap<String, String> watchedKeysMap = assembleWatchKeys(appId, clusterName, namespaces, dataCenter);
 
         // 如果不是仅监听 'application' Namespace ，处理其关联来的 Namespace 。
@@ -171,6 +172,7 @@ public class WatchKeysUtil {
      * @return Watch Key Multimap
      */
     private Multimap<String, String> assembleWatchKeys(String appId, String clusterName, Set<String> namespaces, String dataCenter) {
+        // Map<namespace, List<appId+ cluster + namespace>>
         Multimap<String, String> watchedKeysMap = HashMultimap.create();
         // 循环 Namespace 的名字的集合
         for (String namespace : namespaces) {

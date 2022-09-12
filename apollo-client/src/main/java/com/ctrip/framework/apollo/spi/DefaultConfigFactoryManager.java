@@ -24,7 +24,8 @@ public class DefaultConfigFactoryManager implements ConfigFactoryManager {
 
     @Override
     public ConfigFactory getFactory(String namespace) {
-        // step 1: check hacked factory 从 ConfigRegistry 中，获得 ConfigFactory 对象
+        // step 1: check hacked factory
+        // 从 ConfigRegistry 中，获得 ConfigFactory 对象
         ConfigFactory factory = m_registry.getFactory(namespace);
         if (factory != null) {
             return factory;
@@ -42,7 +43,8 @@ public class DefaultConfigFactoryManager implements ConfigFactoryManager {
             return factory;
         }
 
-        // step 4: check default config factory 从 ApolloInjector 中，获得默认的 ConfigFactory 对象
+        // step 4: check default config factory
+        // 从 ApolloInjector 中，获得默认的 ConfigFactory 对象
         factory = ApolloInjector.getInstance(ConfigFactory.class);
 
         // 更新到缓存中

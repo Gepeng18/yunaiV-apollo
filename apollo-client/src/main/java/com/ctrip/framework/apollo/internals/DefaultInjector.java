@@ -11,7 +11,6 @@ import com.google.inject.Singleton;
 
 /**
  * Guice injector
- *
  * 基于 Guice 注入器实现类
  *
  * @author Jason Song(song_s@ctrip.com)
@@ -22,6 +21,7 @@ public class DefaultInjector implements Injector {
 
     public DefaultInjector() {
         try {
+            // 初始化，基于 Guice 进行依赖注入
             m_injector = Guice.createInjector(new ApolloModule());
         } catch (Throwable ex) {
             ApolloConfigException exception = new ApolloConfigException("Unable to initialize Guice Injector!", ex);
