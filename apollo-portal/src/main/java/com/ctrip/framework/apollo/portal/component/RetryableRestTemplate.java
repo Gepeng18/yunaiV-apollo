@@ -79,14 +79,17 @@ public class RetryableRestTemplate {
             path = path.substring(1, path.length());
         }
 
+        // 将uri的参数和字符串进行拼接
         String uri = uriTemplateHandler.expand(path, uriVariables).getPath();
         Transaction ct = Tracer.newTransaction("AdminAPI", uri);
         ct.addData("Env", env);
 
+        // 根据env获取admin地址（本地测试是ip+port）
         List<ServiceDTO> services = getAdminServices(env, ct);
 
         for (ServiceDTO serviceDTO : services) {
             try {
+                // 向env的地址调用
                 T result = doExecute(method, serviceDTO, path, request, responseType, uriVariables);
                 // todo
                 ct.setStatus(Transaction.SUCCESS);
@@ -173,6 +176,7 @@ public class RetryableRestTemplate {
         return services;
     }
 
+    // 请求 service的homepageUrl+path，request是uri的参数(非路径)，uriVariables是路径参数(其实已经包含在path了，不太懂为什么还要传)，返回responseType
     private <T> T doExecute(HttpMethod method, ServiceDTO service, String path, Object request,
                             Class<T> responseType,
                             Object... uriVariables) {
@@ -197,6 +201,7 @@ public class RetryableRestTemplate {
     }
 
     private String parseHost(ServiceDTO serviceAddress) {
+        // 本地测试是 ip + port
         return serviceAddress.getHomepageUrl() + "/";
     }
 

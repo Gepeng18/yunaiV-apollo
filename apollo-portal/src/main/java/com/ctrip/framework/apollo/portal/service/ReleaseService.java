@@ -44,6 +44,7 @@ public class ReleaseService {
         String releaseBy = StringUtils.isEmpty(model.getReleasedBy()) ? userInfoHolder.getUser().getUserId() : model.getReleasedBy();
 
         // 调用 Admin Service API ，发布 Namespace 的配置。
+        // 传入参数包括：appId、env、clusterName、namespace、然后其他内容是release的相关属性，比如标题，comment，提交人、是否紧急发布等
         ReleaseDTO releaseDTO = releaseAPI.createRelease(appId, env, clusterName, namespaceName,
                 model.getReleaseTitle(), model.getReleaseComment(),
                 releaseBy, isEmergencyPublish);

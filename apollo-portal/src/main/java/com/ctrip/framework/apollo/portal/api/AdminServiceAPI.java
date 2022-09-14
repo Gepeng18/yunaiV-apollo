@@ -196,14 +196,17 @@ public class AdminServiceAPI {
                                         boolean isEmergencyPublish) {
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.parseMediaType(MediaType.APPLICATION_FORM_URLENCODED_VALUE + ";charset=UTF-8"));
+            // 这里封装了release的相关属性
             MultiValueMap<String, String> parameters = new LinkedMultiValueMap<>();
             parameters.add("name", releaseName);
             parameters.add("comment", releaseComment);
             parameters.add("operator", operator);
             parameters.add("isEmergencyPublish", String.valueOf(isEmergencyPublish));
             HttpEntity<MultiValueMap<String, String>> entity = new HttpEntity<>(parameters, headers);
+            // 调用时，appId、cluster、namespace组成path，env用来获取地址(ip+port)，post请求时，entity是请求体
             ReleaseDTO response = restTemplate.post(env, "apps/{appId}/clusters/{clusterName}/namespaces/{namespaceName}/releases", entity,
                     ReleaseDTO.class, appId, clusterName, namespace);
+            /**@see com.ctrip.framework.apollo.adminservice.controller.ReleaseController#publish(String, String, String, String, String, String, boolean)**/
             return response;
         }
 

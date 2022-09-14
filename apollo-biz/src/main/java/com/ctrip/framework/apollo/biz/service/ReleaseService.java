@@ -223,10 +223,15 @@ public class ReleaseService {
     }
 
     // 主干发布配置
+
+    /**
+     * 1、创建Release对象（直接保存数据）
+     * 2、保存ReleaseHistory对象
+     */
     private Release masterRelease(Namespace namespace, String releaseName, String releaseComment,
                                   Map<String, String> configurations, String operator,
                                   int releaseOperation, Map<String, Object> operationContext) {
-        // 获得最后有效的 Release 对象
+        // 获得最后有效的 Release 对象的id，为了后面创建 ReleaseHistory 时使用
         Release lastActiveRelease = findLatestActiveRelease(namespace);
         long previousReleaseId = lastActiveRelease == null ? 0 : lastActiveRelease.getId();
         // 创建 Release 对象，并保存
@@ -329,7 +334,7 @@ public class ReleaseService {
     // 创建 Release 对象，并保存
     private Release createRelease(Namespace namespace, String name, String comment,
                                   Map<String, String> configurations, String operator) {
-        // 创建 Release 对象
+        // 创建 Release 对象，即完成发布
         Release release = new Release();
         release.setReleaseKey(ReleaseKeyGenerator.generateReleaseKey(namespace)); //【TODO 6006】Release Key 用途？
         release.setDataChangeCreatedTime(new Date());
@@ -337,9 +342,11 @@ public class ReleaseService {
         release.setDataChangeLastModifiedBy(operator);
         release.setName(name);
         release.setComment(comment);
+        // appId、clusterName、namespaceName
         release.setAppId(namespace.getAppId());
         release.setClusterName(namespace.getClusterName());
         release.setNamespaceName(namespace.getNamespaceName());
+        // 如果是普通发布，则configurations中是所有配置信息
         release.setConfigurations(gson.toJson(configurations)); // 使用 Gson ，将配置 Map 格式化成字符串。
         // 保存 Release 对象
         release = releaseRepository.save(release);

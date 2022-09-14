@@ -75,7 +75,7 @@ public class ItemController {
         // 校验 Item 格式正确
         checkModel(isValidItem(item));
         // protect
-        item.setLineNum(0);
+        item.setLineNum(0); //初始默认是0，由adminService查出最大的lineNum+1
         item.setId(0);
         // 设置 ItemDTO 的创建和修改人为当前管理员
         String userId = userInfoHolder.getUser().getUserId();

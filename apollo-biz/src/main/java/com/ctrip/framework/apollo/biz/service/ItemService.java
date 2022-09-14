@@ -55,11 +55,13 @@ public class ItemService {
     }
 
     public Item findOne(String appId, String clusterName, String namespaceName, String key) {
+        // 根据 appId、clusterName、namespaceName查查namespace
         Namespace namespace = namespaceService.findOne(appId, clusterName, namespaceName);
         if (namespace == null) {
             throw new NotFoundException(
                     String.format("namespace not found for %s %s %s", appId, clusterName, namespaceName));
         }
+        // 根据namespace和key查item
         Item item = itemRepository.findByNamespaceIdAndKey(namespace.getId(), key);
         return item;
     }
@@ -128,7 +130,7 @@ public class ItemService {
         // protection
         entity.setId(0);
         // 设置 Item 的行号，以 Namespace 下的 Item 最大行号 + 1 。
-        if (entity.getLineNum() == 0) {
+        if (entity.getLineNum() == 0) { // 创建的时候，lineNum设置的都是0
             Item lastItem = findLastOne(entity.getNamespaceId());
             int lineNum = lastItem == null ? 1 : lastItem.getLineNum() + 1;
             entity.setLineNum(lineNum);

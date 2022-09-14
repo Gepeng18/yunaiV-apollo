@@ -49,9 +49,11 @@ public class ItemController {
         Item entity = BeanUtils.transfrom(Item.class, dto);
         // 创建 ConfigChangeContentBuilder 对象
         ConfigChangeContentBuilder builder = new ConfigChangeContentBuilder();
-        // 校验对应的 Item 是否已经存在。若是，抛出 BadRequestException 异常。
+        // 根据appId、clusterName、namespaceName、配置的key这四个参数，校验对应的 Item 是否已经存在。若是，抛出 BadRequestException 异常。
+        // 问：为啥这里不判断env了呢？四大参数是 appId、env、clusterName、namespaceName啊，发现数据库中压根没env参数，可见所有env的namespace放在一起
         Item managedEntity = itemService.findOne(appId, clusterName, namespaceName, entity.getKey());
         if (managedEntity != null) {
+            // 如果item存在，直接抛异常
             throw new BadRequestException("item already exist");
         } else {
             // 保存 Item 对象
@@ -61,7 +63,7 @@ public class ItemController {
         }
         // 将 Item 转换成 ItemDTO 对象
         dto = BeanUtils.transfrom(ItemDTO.class, entity);
-        // 创建 Commit 对象
+        // 创建 Commit 对象（appId、cluster、namespace、changeSet(包括增加的、减少的、修改的等)）
         Commit commit = new Commit();
         commit.setAppId(appId);
         commit.setClusterName(clusterName);

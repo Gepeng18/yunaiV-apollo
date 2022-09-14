@@ -106,6 +106,7 @@ public class ReleaseController {
                               @RequestParam("operator") String operator,
                               @RequestParam(name = "isEmergencyPublish", defaultValue = "false") boolean isEmergencyPublish) {
         // 校验对应的 Namespace 对象是否存在。若不存在，抛出 NotFoundException 异常
+        // namespace取决于appId、clusterName、namespaceName
         Namespace namespace = namespaceService.findOne(appId, clusterName, namespaceName);
         if (namespace == null) {
             throw new NotFoundException(String.format("Could not find namespace for %s %s %s", appId, clusterName, namespaceName));

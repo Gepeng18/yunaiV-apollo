@@ -89,6 +89,7 @@ public class ConfigChangeContentBuilder {
 
     }
 
+    // 深拷贝
     Item cloneItem(Item source) {
         Item target = new Item();
         BeanUtils.copyProperties(source, target);
