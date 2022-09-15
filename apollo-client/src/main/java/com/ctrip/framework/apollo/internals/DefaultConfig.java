@@ -55,9 +55,9 @@ public class DefaultConfig extends AbstractConfig implements RepositoryChangeLis
      */
     public DefaultConfig(String namespace, ConfigRepository configRepository) {
         m_namespace = namespace;
-        m_resourceProperties = loadFromResource(m_namespace);
+        m_resourceProperties = loadFromResource(m_namespace); // 加载类路径
         m_configRepository = configRepository; // LocalFileConfigRepository or LocalFileConfigRepository + RemoteConfigRepository
-        m_configProperties = new AtomicReference<>(); // 和 m_configRepository 一样
+        m_configProperties = new AtomicReference<>(); // do 接收 传入的configRepository.getConfig()，即从远程拉的properties或者本地持久化的properties
         m_warnLogRateLimiter = RateLimiter.create(0.017); // 1 warning log output per minute
         // 初始化
         initialize();
@@ -65,7 +65,7 @@ public class DefaultConfig extends AbstractConfig implements RepositoryChangeLis
 
     private void initialize() {
         try {
-            // 初始化 m_configProperties
+            // 初始化 m_configProperties(在configRepository创建的时候，已经从远程拉或者从本地读取properties了，这里是把局部变量properties赋值给defaultConfig)
             m_configProperties.set(m_configRepository.getConfig());
         } catch (Throwable ex) {
             Tracer.logError(ex);
@@ -78,6 +78,13 @@ public class DefaultConfig extends AbstractConfig implements RepositoryChangeLis
         }
     }
 
+    /**
+     * 这里注意，这是只获取string类型的方法
+     * step 1: 从系统 Properties 获得属性，例如，JVM 启动参数。
+     * step 2: 从config的properties属性中获取值
+     * step 3: 从环境变量中获得参数
+     * step 4: 从类路径的文件中获取value
+     */
     @Override
     public String getProperty(String key, String defaultValue) {
         // step 1: check system properties, i.e. -Dkey=value

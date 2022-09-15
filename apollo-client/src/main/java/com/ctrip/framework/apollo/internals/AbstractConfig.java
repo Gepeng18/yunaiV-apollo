@@ -96,10 +96,15 @@ public abstract class AbstractConfig implements Config {
         }
     }
 
+    /**
+     * 这里注意，getXXXProperty 这种都是从本地缓存中取
+     * 每种类型一个本地缓存，然后缓存中如果没有值，则调用getProperty()方法从config的properties属性中获取值(里面只存储了String)，
+     * 然后使用映射函数从string映射为具体的类型，存储到该类型对应的本地缓存中
+     */
     @Override
     public Integer getIntProperty(String key, Integer defaultValue) {
         try {
-            // 1、本地缓存没有，初始化本地缓存
+            // 1、本地缓存没有，初始化一个空的本地缓存
             if (m_integerCache == null) {
                 synchronized (this) {
                     if (m_integerCache == null) {
@@ -380,6 +385,11 @@ public abstract class AbstractConfig implements Config {
         return getValueAndStoreToCache(key, parser, cache, defaultValue);
     }
 
+    /**
+     * 1、调用getProperty()获取属性值
+     * 2、使用映射函数解析属性值
+     * 3、存储到本地缓存中
+     */
     private <T> T getValueAndStoreToCache(String key, Function<String, T> parser, Cache<String, T> cache, T defaultValue) {
         // 获得当前版本号
         long currentConfigVersion = m_configVersion.get();

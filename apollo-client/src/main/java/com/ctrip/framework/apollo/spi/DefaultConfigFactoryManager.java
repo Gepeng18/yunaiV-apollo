@@ -22,6 +22,12 @@ public class DefaultConfigFactoryManager implements ConfigFactoryManager {
         m_registry = ApolloInjector.getInstance(ConfigRegistry.class);
     }
 
+    /**
+     * 1、先获取工厂（工厂是通过registry对象拿到的，registry对象是通过基于 Guice 进行依赖注入对象的 getInstance(ConfigRegistry)拿到的）
+     * 2、如果通过registry对象拿不到工厂，则看看本地工厂缓存有没有
+     * 3、本地工厂缓存没有，则通过getInstance(ConfigFactory, namepsace)拿
+     * 4、还没有，则通过getInstance(ConfigFactory)拿默认的ConfigFactory 对象
+     */
     @Override
     public ConfigFactory getFactory(String namespace) {
         // step 1: check hacked factory

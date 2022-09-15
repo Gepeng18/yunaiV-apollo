@@ -35,7 +35,7 @@ public class DefaultConfigManager implements ConfigManager {
 
     @Override
     public Config getConfig(String namespace) {
-        // do 1. 从缓存中获取 Config 对象
+        // do 1. 从缓存中获取 Config 对象（缓存中保存了key位namespace，value为config）
         Config config = m_configs.get(namespace);
         // 若不存在，进行创建
         if (config == null) {
@@ -44,11 +44,11 @@ public class DefaultConfigManager implements ConfigManager {
                 config = m_configs.get(namespace);
                 // 若不存在，进行创建
                 if (config == null) {
-                    // do 2. 获得对应的 ConfigFactory 对象，用它来创建config对象
+                    // do 2. 获得对应的 ConfigFactory 对象(一般为默认的)，用它来创建config对象
                     ConfigFactory factory = m_factoryManager.getFactory(namespace);
                     // 创建 Config 对象
                     config = factory.create(namespace); /** @see DefaultConfigFactory#create(String) */
-                    // 添加到缓存
+                    // 将config添加到缓存，config中有个局部变量properties了，包含了namespace的配置
                     m_configs.put(namespace, config);
                 }
             }

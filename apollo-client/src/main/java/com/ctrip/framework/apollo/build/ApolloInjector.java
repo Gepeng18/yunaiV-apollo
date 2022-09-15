@@ -25,10 +25,9 @@ public class ApolloInjector {
      * s_injector是单例，使用 JDK SPI 进行加载
      */
     private static Injector getInjector() {
-        // 若 Injector 不存在，则进行获得
+        // 若 Injector 不存在，则初始化
         if (s_injector == null) {
             synchronized (lock) {
-                // 若 Injector 不存在，则进行获得
                 if (s_injector == null) {
                     try {
                         // do 基于 JDK SPI 加载对应的 Injector 实现对象
@@ -46,6 +45,7 @@ public class ApolloInjector {
 
     public static <T> T getInstance(Class<T> clazz) {
         try {
+            // getInjector() 通过SPI加载了 Injector 对象，最终底层调用还是基于 Guice 进行依赖注入对象的 getInstance()
             return getInjector().getInstance(clazz);
         } catch (Throwable ex) {
             Tracer.logError(ex);

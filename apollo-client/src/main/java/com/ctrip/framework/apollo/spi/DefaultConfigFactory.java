@@ -25,8 +25,8 @@ public class DefaultConfigFactory implements ConfigFactory {
 
     @Override
     public Config create(String namespace) {
-        // 创建 ConfigRepository 对象
-        // 创建 DefaultConfig 对象
+        // 创建 DefaultConfig 对象（入参是 ConfigRepository 对象）
+        // 这个ConfigRepository能从远程拉取properties配置，并且如果远程挂了，还能从持久化的本地文件中读取，然后赋值给局部变量properties
         return new DefaultConfig(namespace, createLocalConfigRepository(namespace));
     }
 
@@ -56,7 +56,9 @@ public class DefaultConfigFactory implements ConfigFactory {
             logger.warn("==== Apollo is in local mode! Won't pull configs from remote server for namespace {} ! ====", namespace);
             return new LocalFileConfigRepository(namespace);
         }
-        // 非本地模式，使用 LocalFileConfigRepository + RemoteConfigRepository 对象
+        // 非本地模式，使用 LocalFileConfigRepository(RemoteConfigRepository)
+        // 这个对象非常重要，它是一个本地文件配置仓库，但是传入了一个参数，是远程配置仓库，什么意思呢？
+        // 即定义了，这个model能从远程拉取properties配置，并且如果远程挂了，还能从持久化的本地文件中读取，然后赋值给局部变量properties
         return new LocalFileConfigRepository(namespace, createRemoteConfigRepository(namespace));
     }
 

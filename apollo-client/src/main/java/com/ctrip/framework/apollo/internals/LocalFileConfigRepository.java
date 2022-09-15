@@ -70,7 +70,7 @@ public class LocalFileConfigRepository extends AbstractConfigRepository implemen
         m_configUtil = ApolloInjector.getInstance(ConfigUtil.class);
         // 获得本地缓存配置文件的目录
         this.setLocalCacheDir(findLocalCacheDir(), false);
-        // 设置 `m_upstream` 属性
+        // 设置 `m_upstream` 属性，并从远端拉了一次配置，更新到properties变量，并且持久化到文件中
         this.setUpstreamRepository(upstream);
         // 同步配置
         this.trySync();
@@ -154,6 +154,11 @@ public class LocalFileConfigRepository extends AbstractConfigRepository implemen
         super.fireRepositoryChange(namespace, newProperties);
     }
 
+    /**
+     * 核心宗旨：同步本地的properties变量
+     * 1、从 `m_upstream` 同步配置，并同步到本地
+     * 2、若失败，读取本地缓存的配置文件
+     */
     @Override
     protected void sync() {
         // do 1、从 `m_upstream` 同步配置，并同步到本地
@@ -187,7 +192,7 @@ public class LocalFileConfigRepository extends AbstractConfigRepository implemen
 
     /**
      * 1、从 `m_upstream`即server端 拉取配置 Properties
-     * 2、更新局部变量并持久化到本地
+     * 2、更新properties变量并持久化到本地
      */
     private boolean trySyncFromUpstream() {
         if (m_upstream == null) {

@@ -213,17 +213,17 @@ public class NamespaceService {
         return findParentNamespace(new Namespace(appId, clusterName, namespaceName));
     }
 
-    // 获得父 Namespace
+    // 获得父 Namespace（父namespace和子namespace只有clustername不一样）
     public Namespace findParentNamespace(Namespace namespace) {
         String appId = namespace.getAppId();
         String namespaceName = namespace.getNamespaceName();
         // 获得 Cluster
         Cluster cluster = clusterService.findOne(appId, namespace.getClusterName());
-        // 若为子 Cluster
+        // 若有父 Cluster
         if (cluster != null && cluster.getParentClusterId() > 0) {
             // 获得父 Cluster
             Cluster parentCluster = clusterService.findOne(cluster.getParentClusterId());
-            // 获得父 Namespace
+            // 根据appId、父clusterName、namepsaceName获得父 Namespace
             return findOne(appId, parentCluster.getName(), namespaceName);
         }
         return null;

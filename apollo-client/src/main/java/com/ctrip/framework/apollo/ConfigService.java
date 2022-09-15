@@ -25,10 +25,11 @@ public class ConfigService {
     private volatile ConfigRegistry m_configRegistry;
 
     private ConfigManager getManager() {
-        // 若 ConfigManager 未初始化，进行获得
+        // 若 ConfigManager 未初始化，进行初始化
         if (m_configManager == null) {
             synchronized (this) {
                 if (m_configManager == null) {
+                    // 最终底层调用还是基于 Guice 进行依赖注入对象的 getInstance()
                     m_configManager = ApolloInjector.getInstance(ConfigManager.class);
                 }
             }
@@ -38,7 +39,7 @@ public class ConfigService {
     }
 
     private ConfigRegistry getRegistry() {
-        // 若 ConfigRegistry 未初始化，进行获得
+        // 若 ConfigRegistry 未初始化，进行初始化
         if (m_configRegistry == null) {
             synchronized (this) {
                 if (m_configRegistry == null) {
